@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:expenses/components/chart.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -49,6 +51,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _transactions = [];
+  bool _showChart = false;
 
   List<Transaction> get _recentTransactions {
     return _transactions.where((tr) {
@@ -90,9 +93,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    bool isLandscape = mediaQuery.orientation == Orientation.landscape;
+
     final appBar = AppBar(
       title: const Text('Despesas Pessoais'),
       actions: <Widget>[
+        if (isLandscape)
+          IconButton(
+            icon: Icon(_showChart ? Icons.list : Icons.analytics),
+            onPressed: () {
+              setState(() {
+                _showChart = !_showChart;
+              });
+            },
+          ),
         IconButton(
           icon: Icon(Icons.add),
           onPressed: () => _openTransactionFormModal(context),
@@ -100,23 +115,40 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
     );
 
-    final availabeleHeight = MediaQuery.of(context).size.height -
+    final availabeleHeight = mediaQuery.size.height -
         appBar.preferredSize.height -
-        MediaQuery.of(context).padding.top;
+        mediaQuery.padding.top;
     return Scaffold(
       appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Container(
-              height: availabeleHeight * 0.20,
-              child: Chart(_recentTransactions),
-            ),
-            Container(
-              height: availabeleHeight * 0.80,
-              child: TransactionList(_transactions, _removeTransaction),
-            ),
+            /*if (isLandscape)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Exibir grafico'),
+                  Switch(
+                    value: _showChart,
+                    onChanged: (value) {
+                      setState(() {
+                        _showChart = value;
+                      });
+                    },
+                  ),
+                ],
+              ),*/
+            if (_showChart || !isLandscape)
+              Container(
+                height: availabeleHeight * (isLandscape ? 0.60 : 0.20),
+                child: Chart(_recentTransactions),
+              ),
+            if (!_showChart || !isLandscape)
+              Container(
+                height: availabeleHeight * (isLandscape ? 1 : 0.80),
+                child: TransactionList(_transactions, _removeTransaction),
+              ),
           ],
         ),
       ),
