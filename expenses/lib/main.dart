@@ -8,15 +8,16 @@ import './components/transaction_list.dart';
 import 'models/transaction.dart';
 import 'components/chart.dart';
 
-main() => runApp(ExpensesApp());
+main() => runApp(const ExpensesApp());
 
 class ExpensesApp extends StatelessWidget {
+  const ExpensesApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    ThemeData tema = ThemeData();
 
     return MaterialApp(
-      home: MyHomePage(),
+      home: const MyHomePage(),
       theme: ThemeData(
         fontFamily: 'Quicksand',
         textTheme: ThemeData.light().textTheme.copyWith(
@@ -45,18 +46,37 @@ class ExpensesApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final List<Transaction> _transactions = [];
   bool _showChart = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print('state');
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance?.removeObserver(this);
+  }
 
   List<Transaction> get _recentTransactions {
     return _transactions.where((tr) {
       return tr.date.isAfter(DateTime.now().subtract(
-       const Duration(days: 7),
+        const Duration(days: 7),
       ));
     }).toList();
   }
@@ -140,12 +160,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),*/
             if (_showChart || !isLandscape)
-              Container(
+              SizedBox(
                 height: availabeleHeight * (isLandscape ? 0.60 : 0.20),
                 child: Chart(_recentTransactions),
               ),
             if (!_showChart || !isLandscape)
-              Container(
+              SizedBox(
                 height: availabeleHeight * (isLandscape ? 1 : 0.80),
                 child: TransactionList(_transactions, _removeTransaction),
               ),
